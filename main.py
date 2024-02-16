@@ -16,7 +16,7 @@ API_SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 SHEET_ID = '1Tx0swikem8WWTHEqTrvIB4okJpLEQ9fpLogy4K02JiY'
 DATA_RANGE = 'engenharia_de_software!A3:F27'
 RESULT_RANGE = 'engenharia_de_software!G4:H27'
-CREDENTIALS_FILE = 'tunts-rock-2024-psilva8769.json'
+CREDENTIALS_FILE = '{PATH_TO_YOUR_CREDENTIALS_JSON}.json'
 
 def authenticate_with_google(api_scopes, credentials_path):
     # Authenticate with the Google API using the service account credentials file.
