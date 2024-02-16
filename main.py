@@ -2,6 +2,7 @@ import pandas as pd
 import re
 import logging
 import math
+import numpy as np
 from numpy import ceil
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
@@ -42,15 +43,31 @@ def process_student_data(df, total_classes_string):
     allowed_absences = total_classes_float[0]*0.25
     print(math.ceil(allowed_absences))
 
+   # Clean column names and convert columns to numeric where possible
     df = df.rename(columns=lambda x: x.strip()).apply(lambda x: pd.to_numeric(x, errors='ignore'))
-    df.loc()
-    df['Average'] = (df['P1'] + df['P2'] + df['P3'])/3
-    df['Status'] = 'Aprovado'
+
+    # Calculate average
+    df['Average'] = (df['P1'] + df['P2'] + df['P3']) / 3
+
+    # Initialize 'Status' and 'Final Grade' columns
+    df['Status'] = np.nan
     df['Final Grade'] = 0
+
+    # Apply conditions
     df.loc[df['Average'].between(50, 70, inclusive='left'), 'Status'] = 'Exame Final'
     df.loc[df['Average'] < 50, 'Status'] = 'Reprovado por Nota'
-    df.loc[df['Status'] == 'Exame Final', 'Final Grade'] = ((df['Average'] + (70 - df['Average']))/2).apply(ceil)
-    df.loc[df['Faltas'].astype(int) > math.ceil(allowed_absences), 'Status'] = 'Reprovado por Falta'
+    df.loc[df['Faltas'].astype(int) > ceil(allowed_absences), 'Status'] = 'Reprovado por Falta'
+
+    # Calculate 'Final Grade' for 'Exame Final' status
+    df.loc[df['Status'] == 'Exame Final', 'Final Grade'] = ((df['Average'] + (70 - df['Average'])) / 2).apply(ceil)
+
+    # For rows that dont fall into 'Exame Final, this makes sure that 'Final Grade' stays 0
+    # Kinda of an optinal step but useful if changes are ever needed
+    df.loc[df['Status'] != 'Exame Final', 'Final Grade'] = 0
+
+    # For any rows that didn't meet any condition, set a default status
+    df['Status'].fillna('Aprovado', inplace=True)
+
     return df[['Status', 'Final Grade']]
 
 # Load
